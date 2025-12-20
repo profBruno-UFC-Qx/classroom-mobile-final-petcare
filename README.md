@@ -1,28 +1,29 @@
+[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/AR7CADm8)
+[![Open in Codespaces](https://classroom.github.com/assets/launch-codespace-2972f46106e565e64193e422d61a12cf1da4916b45550586e14ef0a7c637dd04.svg)](https://classroom.github.com/open-in-codespaces?assignment_repo_id=21339873)
 # Proposta de aplicativo
 
 ## Equipe
-* **Nome do Aluno(a) 1:** [Seu nome e matrícula]
-* **Nome do Aluno(a) 2:** [Seu nome e matrícula]
-* **Nome do Aluno(a) 3:** [Seu nome e matrícula]
-* ...
-
+* **Nícolas Ferreira Leite** 552425
+  
 ---
 
 ## Título do Projeto
-[Escolha um título criativo e descritivo para o seu projeto.]
+PetCare
 
 ## Descrição do Projeto
-[Descreva em 2-3 parágrafos o que o seu projeto faz. Qual é o problema que ele resolve? Quem é o público-alvo? Quais são as principais funcionalidades?]
+O PetCare é um aplicativo móvel (Android/Kotlin) projetado para centralizar e gerenciar a vida dos animais de estimação. O projeto ataca um problema comum para tutores de pets: a dificuldade em acompanhar o calendário de saúde e as rotinas de cuidado. Muitos tutores acabam esquecendo datas cruciais de vacinação, vermifugação ou até mesmo a compra de ração, o que pode impactar negativamente o bem-estar do animal.
+
+O público-alvo são os "pais de pet" modernos, que tratam seus animais como membros da família e buscam soluções tecnológicas para otimizar seus cuidados. O PetCare funcionará como uma "caderneta de saúde digital" e um assistente pessoal, enviando lembretes proativos para garantir que nenhum compromisso importante seja perdido e ajudando a encontrar serviços essenciais, como pet shops próximos.
 
 ---
 
 ## Funcionalidades Principais
-[Liste as principais funcionalidades do projeto. Use caixas de seleção para que a equipe possa marcar as concluídas nas próximas etapas.]
 
-- [ ] Funcionalidade 1: [Breve descrição da funcionalidade]
-- [ ] Funcionalidade 2: [Breve descrição da funcionalidade]
-- [ ] Funcionalidade 3: [Breve descrição da funcionalidade]
-- [ ] ...
+- [ ] Gerenciamento de Pets (CRUD): Permitir ao usuário cadastrar, editar, visualizar e excluir perfis para seus animais de estimação (incluindo nome, foto, espécie, raça, data de nascimento).
+- [ ] Caderneta de Saúde Digital: Registrar o histórico de vacinas, vermifugos e consultas veterinárias, com suas respectivas datas de aplicação e datas de reforço (próxima dose).
+- [ ] Agendamento de Lembretes: Criar e gerenciar lembretes para eventos de rotina (ex: dia do banho, comprar ração, medicação anti-pulgas) e eventos de saúde (próxima vacina).
+- [ ] Sistema de Notificações: O aplicativo deve disparar notificações push locais para alertar o usuário sobre os lembretes agendados, mesmo que o aplicativo esteja fechado.
+- [ ] Mapa de Pet Shops: Encontrar e exibir pet shops próximos ao usuário, utilizando a localização (GPS) e consumindo uma API de mapas (como Google Maps/Places).
 
 ---
 

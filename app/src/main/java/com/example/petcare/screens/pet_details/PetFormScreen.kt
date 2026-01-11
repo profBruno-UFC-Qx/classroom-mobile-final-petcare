@@ -4,8 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -18,15 +17,24 @@ import java.util.Locale
 @Composable
 fun PetFormScreen(
     navController: NavController,
-    viewModel: PetFormViewModel
+    viewModel: PetFormViewModel,
+    petId: Long?
 ) {
+    LaunchedEffect(key1 = petId) {
+        petId?.let { id ->
+            if (id > 0L) {
+                viewModel.loadPetForEditing(id)
+            }
+        }
+    }
+
     val uiState = viewModel.uiState
     val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Adicionar Novo Pet") },
+                title = { Text(if (uiState.isEditing) "Editar Pet" else "Adicionar Novo Pet") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -45,7 +53,7 @@ fun PetFormScreen(
                 },
                 containerColor = if (uiState.isFormValid) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
             ) {
-                Text("Salvar")
+                Text(if (uiState.isEditing) "Atualizar" else "Salvar")
             }
         }
     ) { innerPadding ->

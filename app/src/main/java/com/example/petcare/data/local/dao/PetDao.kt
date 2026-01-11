@@ -9,12 +9,16 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PetDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPet(pet: PetEntity)
 
-    @Query("SELECT * FROM pets")
+    @Query("SELECT * FROM pets ORDER BY name ASC")
     fun getAllPets(): Flow<List<PetEntity>>
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun savePet(pet: PetEntity)
+
     @Query("SELECT * FROM pets WHERE id = :petId")
-    fun getPetById(petId: Long): Flow<PetEntity>
+    fun getPetById(petId: Long): Flow<PetEntity?>
+
+    @Query("DELETE FROM pets WHERE id = :petId")
+    suspend fun deletePetById(petId: Long)
 }

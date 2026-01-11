@@ -22,6 +22,11 @@ class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory
             return HomeViewModel(petRepository) as T
         }
 
+        if (modelClass.isAssignableFrom(PetDetailViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return PetDetailViewModel(petRepository) as T
+        }
+
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }
 }

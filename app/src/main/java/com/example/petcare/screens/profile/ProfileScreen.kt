@@ -21,9 +21,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.petcare.R
+import com.example.petcare.data.repository.AuthRepository
 
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(
+    navController: NavController,
+    authRepository: AuthRepository,
+    userName: String?,
+    userEmail: String?
+) {
     Scaffold(
         containerColor = Color(0xFFEAF7F8)
     ) { innerPadding ->
@@ -44,20 +50,10 @@ fun ProfileScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                UserInfoCard(name = "Nícolas Ferreira Leite", email = "nicolas@email.com")
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = { navController.navigate("editProfile") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF91D045)),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Editar Perfil", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                }
+                UserInfoCard(
+                    name = userName ?: "Nome não encontrado",
+                    email = userEmail ?: "E-mail não encontrado"
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -66,6 +62,7 @@ fun ProfileScreen(navController: NavController) {
                 Spacer(modifier = Modifier.weight(1f))
 
                 LogoutButton(onLogoutClick = {
+                    authRepository.logout()
                     navController.navigate("login") {
                         popUpTo(navController.graph.startDestinationId) { inclusive = true }
                     }
@@ -200,8 +197,14 @@ private fun LogoutButton(onLogoutClick: () -> Unit) {
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
 fun ProfileScreenPreview() {
-    ProfileScreen(navController = rememberNavController())
+    ProfileScreen(
+        navController = rememberNavController(),
+        authRepository = AuthRepository(),
+        userName = "Nícolas Ferreira Leite",
+        userEmail = "nicolas.preview@email.com"
+    )
 }

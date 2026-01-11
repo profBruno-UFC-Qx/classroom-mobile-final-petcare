@@ -5,9 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.petcare.data.repository.AuthRepository
 import com.example.petcare.screens.home.HomeScreen
 import com.example.petcare.screens.SplashScreen
 import com.example.petcare.screens.auth.LoginScreen
@@ -34,10 +36,12 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val authRepository = remember { AuthRepository() }
+
 
     NavHost(
         navController = navController,
-        startDestination = "splash"
+        startDestination = if (authRepository.getCurrentUser()  != null) "home" else "splash"
     ) {
         composable("splash") {
             SplashScreen(navController = navController)
@@ -52,7 +56,11 @@ fun AppNavigation() {
         }
 
         composable("home") {
-            HomeScreen(navController = navController)
+            val currentUser = authRepository.getCurrentUser()
+            HomeScreen(
+                navController = navController,
+                userName = currentUser?.displayName
+            )
         }
 
         composable("pet_form") {
@@ -64,7 +72,13 @@ fun AppNavigation() {
         }
 
         composable("profile") {
-            ProfileScreen(navController = navController)
+            val currentUser = authRepository.getCurrentUser()
+            ProfileScreen(
+                navController = navController,
+                authRepository = authRepository,
+                userName = currentUser?.displayName,
+                userEmail = currentUser?.email
+            )
         }
 
         composable("pet_detail/{petId}") {

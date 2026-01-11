@@ -1,5 +1,6 @@
 package com.example.petcare.screens.auth
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,12 +18,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.petcare.data.repository.AuthRepository
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import kotlinx.coroutines.launch
 
 @Composable
 fun SignUpScreen(navController: NavController) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    val coroutineScope = rememberCoroutineScope()
+    val authRepository = remember { AuthRepository() }
 
     Box(
         modifier = Modifier
@@ -59,7 +70,8 @@ fun SignUpScreen(navController: NavController) {
                     unfocusedContainerColor = Color.White,
                     focusedIndicatorColor = Color(0xFF26B6C4)
                 ),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
+                isError = errorMessage != null
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -74,7 +86,8 @@ fun SignUpScreen(navController: NavController) {
                     unfocusedContainerColor = Color.White,
                     focusedIndicatorColor = Color(0xFF26B6C4)
                 ),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
+                isError = errorMessage != null
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -90,22 +103,69 @@ fun SignUpScreen(navController: NavController) {
                     unfocusedContainerColor = Color.White,
                     focusedIndicatorColor = Color(0xFF26B6C4)
                 ),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
+                isError = errorMessage != null
             )
+
+            errorMessage?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { /* Lógica de cadastro */ },
+                onClick = {
+                    if (name.isNotBlank() && email.isNotBlank() && password.isNotBlank()) {
+                        isLoading = true
+                        errorMessage = null
+                        coroutineScope.launch {
+                            try {
+                                authRepository.createUser(name, email, password)
+                                navController.navigate("home") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            } catch (e: Exception) {
+                                Log.e("SignUpScreen", "Falha no cadastro: ", e)
+                                errorMessage = when (e) {
+                                    is FirebaseAuthWeakPasswordException -> "Sua senha é muito fraca. Tente uma com pelo menos 6 caracteres."
+                                    is FirebaseAuthInvalidCredentialsException -> "O e-mail informado é inválido."
+                                    is FirebaseAuthUserCollisionException -> "Este e-mail já está em uso."
+                                    else -> "Ocorreu um erro. Tente novamente."
+                                }
+                            } finally {
+                                isLoading = false
+                            }
+                        }
+                    } else {
+                        errorMessage = "Por favor, preencha todos os campos."
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
+                enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF91D045))
             ) {
-                Text("Cadastrar", fontWeight = FontWeight.Bold, color = Color.White)
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Cadastrar", fontWeight = FontWeight.Bold, color = Color.White)
+                }
             }
 
-            TextButton(onClick = { navController.navigate("login") }) {
+            TextButton(
+                onClick = { navController.navigate("login") },
+                enabled = !isLoading
+            ) {
                 Text("Já tem uma conta? Faça Login", color = Color.White)
             }
         }

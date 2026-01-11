@@ -36,8 +36,7 @@ data class Pet(
 )
 
 @Composable
-fun HomeScreen(navController: NavController) {
-    val userName = "Nicolas"
+fun HomeScreen(navController: NavController, userName: String?) {
     val pets = remember {
         listOf(
             Pet("1", "Max", "Cachorro", "Golden Retriever", R.drawable.ic_pets, 2020),
@@ -58,7 +57,7 @@ fun HomeScreen(navController: NavController) {
             ) {
                 Column {
                     Text(
-                        text = "Olá, $userName!",
+                        text = "Olá, ${userName ?: ""}!",
                         fontSize = 32.sp,
                         color = Color.White,
                         fontWeight = FontWeight.Bold
@@ -214,5 +213,5 @@ fun BoxScope.SmallFloatingButton(imageRes: Int, alignment: Alignment, onClick: (
 @Preview(showBackground = true, backgroundColor = 0xFFF8FEFF)
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen(navController = rememberNavController())
+    HomeScreen(navController = rememberNavController(), userName = "Nicolas")
 }

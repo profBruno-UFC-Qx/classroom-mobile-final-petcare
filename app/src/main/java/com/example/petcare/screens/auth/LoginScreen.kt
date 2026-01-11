@@ -20,11 +20,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.petcare.data.repository.AuthRepository
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    val coroutineScope = rememberCoroutineScope()
+    val authRepository = remember { AuthRepository() }
 
     Box(
         modifier = Modifier
@@ -77,7 +84,8 @@ fun LoginScreen(navController: NavController) {
                     unfocusedContainerColor = Color.White,
                     focusedIndicatorColor = Color(0xFF26B6C4)
                 ),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
+                isError = errorMessage != null
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -93,31 +101,69 @@ fun LoginScreen(navController: NavController) {
                     unfocusedContainerColor = Color.White,
                     focusedIndicatorColor = Color(0xFF26B6C4)
                 ),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
+                isError = errorMessage != null
             )
+
+            errorMessage?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
                 onClick = {
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
+                    if (email.isNotBlank() && password.isNotBlank()) {
+                        isLoading = true
+                        errorMessage = null
+                        coroutineScope.launch {
+                            try {
+                                authRepository.loginUser(email, password)
+                                navController.navigate("home") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            } catch (e: Exception) {
+                                errorMessage = "E-mail ou senha inválidos."
+                            } finally {
+                                isLoading = false
+                            }
+                        }
+                    } else {
+                        errorMessage = "Por favor, preencha todos os campos."
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
+                enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF91D045))
             ) {
-                Text("Entrar", fontWeight = FontWeight.Bold, color = Color.White)
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Entrar", fontWeight = FontWeight.Bold, color = Color.White)
+                }
             }
 
-            TextButton(onClick = { navController.navigate("signup") }) {
+            TextButton(
+                onClick = { navController.navigate("signup") },
+                enabled = !isLoading
+            ) {
                 Text("Não tem uma conta? Cadastre-se", color = Color.White)
             }
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable

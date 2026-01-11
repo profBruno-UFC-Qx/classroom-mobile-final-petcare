@@ -1,227 +1,98 @@
 package com.example.petcare.screens.pet_details
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.petcare.R
+import com.example.petcare.viewmodel.PetFormViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PetFormScreen(navController: NavController) {
-    val name = ""
-    val breed = ""
-    val birthDate = ""
-    val species = ""
+fun PetFormScreen(
+    navController: NavController,
+    viewModel: PetFormViewModel
+) {
+    val uiState = viewModel.uiState
+    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFEAF7F8))
-            .verticalScroll(rememberScrollState())
-    ) {
-        PetFormHeader(onBackClick = { navController.popBackStack() })
-
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Adicionar Novo Pet") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Voltar"
+                        )
+                    }
+                }
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    viewModel.savePet()
+                    navController.popBackStack()
+                },
+                containerColor = if (uiState.isFormValid) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Text("Salvar")
+            }
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(24.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(innerPadding)
+                .padding(16.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            PetPhotoPlaceholder()
-            Text("Adicionar foto", fontSize = 14.sp, color = Color.Gray)
-
-            FormField(
-                label = "Nome *",
-                value = name,
-                placeholder = "Ex: Rex, Mimi, Luna...",
-                enabled = false
+            OutlinedTextField(
+                value = uiState.name,
+                onValueChange = viewModel::onNameChange,
+                label = { Text("Nome do Pet*") },
+                modifier = Modifier.fillMaxWidth(),
+                isError = uiState.name.isBlank()
             )
 
-            FormField(
-                label = "Espécie *",
-                value = species,
-                placeholder = "Selecione a espécie",
-                trailingIconResId = R.drawable.ic_keyboard_arrow_down,
-                enabled = false
+            OutlinedTextField(
+                value = uiState.species,
+                onValueChange = viewModel::onSpeciesChange,
+                label = { Text("Espécie* (Ex: Cachorro, Gato)") },
+                modifier = Modifier.fillMaxWidth(),
+                isError = uiState.species.isBlank()
             )
 
-            FormField(
-                label = "Raça",
-                value = breed,
-                placeholder = "Ex: Labrador, Siamês...",
-                enabled = false
+            OutlinedTextField(
+                value = uiState.breed,
+                onValueChange = viewModel::onBreedChange,
+                label = { Text("Raça (Opcional)") },
+                modifier = Modifier.fillMaxWidth()
             )
 
-            FormField(
-                label = "Data de Nascimento",
-                value = birthDate,
-                placeholder = "dd/mm/aaaa",
-                enabled = false
+            OutlinedTextField(
+                value = uiState.birthDate?.let { dateFormat.format(it) } ?: "",
+                onValueChange = { },
+                readOnly = true,
+                label = { Text("Data de Nascimento*") },
+                modifier = Modifier.fillMaxWidth(),
+                isError = uiState.birthDate == null
             )
 
-            ActionButtons(
-                onCancelClick = { navController.popBackStack() },
-                onSaveClick = { /* Sem interação */ }
-            )
+            Button(onClick = { viewModel.onBirthDateChange(Date()) }) {
+                Text("Definir Data de Hoje (Temporário)")
+            }
+
+            Text("*Campos obrigatórios", style = MaterialTheme.typography.bodySmall)
         }
     }
-}
-
-@Composable
-private fun PetFormHeader(onBackClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFF26B6C4))
-            .padding(vertical = 16.dp, horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = onBackClick) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_arrow_back),
-                contentDescription = "Voltar",
-                colorFilter = ColorFilter.tint(Color.White)
-            )
-        }
-        Text(
-            text = "Adicionar Pet",
-            fontSize = 22.sp,
-            color = Color.White,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Composable
-private fun PetPhotoPlaceholder() {
-    Box(contentAlignment = Alignment.BottomEnd) {
-        Box(
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFD1EBEF)),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_camera_alt),
-                contentDescription = "Ícone de Câmera",
-                modifier = Modifier.size(48.dp),
-                colorFilter = ColorFilter.tint(Color(0xFF26B6C4))
-            )
-        }
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .background(Color(0xFF26B6C4), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_camera_alt),
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-                colorFilter = ColorFilter.tint(Color.White)
-            )
-        }
-    }
-}
-
-@Composable
-private fun FormField(
-    label: String,
-    value: String,
-    placeholder: String,
-    enabled: Boolean,
-    trailingIconResId: Int? = null
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(
-            text = label,
-            modifier = Modifier.fillMaxWidth(),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color(0xFF1B2D3D)
-        )
-        OutlinedTextField(
-            value = value,
-            onValueChange = { /* Sem interação */ },
-            placeholder = { Text(placeholder, color = Color.LightGray) },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            enabled = enabled,
-            trailingIcon = trailingIconResId?.let {
-                {
-                    Image(
-                        painter = painterResource(id = it),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(Color.Gray)
-                    )
-                }
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                disabledContainerColor = Color(0xFFF0F0F0),
-                focusedBorderColor = Color(0xFF26B6C4),
-                unfocusedBorderColor = Color.LightGray.copy(alpha = 0.5f)
-            )
-        )
-    }
-}
-
-@Composable
-private fun ActionButtons(onCancelClick: () -> Unit, onSaveClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        OutlinedButton(
-            onClick = onCancelClick,
-            modifier = Modifier
-                .weight(1f)
-                .height(50.dp),
-            shape = RoundedCornerShape(8.dp),
-            border = BorderStroke(1.dp, Color.Gray)
-        ) {
-            Text("Cancelar", color = Color.Gray)
-        }
-
-        Button(
-            onClick = onSaveClick,
-            modifier = Modifier
-                .weight(1f)
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF26B6C4)),
-            shape = RoundedCornerShape(8.dp),
-            enabled = false
-        ) {
-            Text("Salvar", color = Color.White, fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PetFormScreenPreview() {
-    PetFormScreen(navController = rememberNavController())
 }

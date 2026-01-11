@@ -1,3 +1,5 @@
+// settings.gradle.kts
+
 pluginManagement {
     repositories {
         google {
@@ -9,6 +11,8 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        // Add this line to include the Compose Compiler repository
+        maven("https://androidx.dev/storage/compose-compiler/repository/")
     }
 }
 dependencyResolutionManagement {
@@ -16,6 +20,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // It's also a good practice to add it here for dependencies
+        maven("https://androidx.dev/storage/compose-compiler/repository/")
     }
 }
 

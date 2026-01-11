@@ -10,7 +10,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,24 +26,16 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.petcare.R
 import com.example.petcare.components.PetListItem
-
-data class Pet(
-    val id: String,
-    val name: String,
-    val species: String,
-    val breed: String? = null,
-    val photo: Int? = null,
-    val birthYear: Int? = null
-)
+import com.example.petcare.data.local.entity.PetEntity
+import com.example.petcare.viewmodel.HomeViewModel
 
 @Composable
-fun HomeScreen(navController: NavController, userName: String?) {
-    val pets = remember {
-        listOf(
-            Pet("1", "Max", "Cachorro", "Golden Retriever", R.drawable.ic_pets, 2020),
-            Pet("2", "Mia", "Gato", "Siamês", R.drawable.ic_pets, 2021)
-        )
-    }
+fun HomeScreen(
+    navController: NavController,
+    userName: String?,
+    homeViewModel: HomeViewModel
+) {
+    val pets by homeViewModel.pets.collectAsState()
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -57,7 +50,7 @@ fun HomeScreen(navController: NavController, userName: String?) {
             ) {
                 Column {
                     Text(
-                        text = "Olá, ${userName ?: ""}!",
+                        text = "Olá, ${userName ?: "Dono(a) de Pet"}!",
                         fontSize = 32.sp,
                         color = Color.White,
                         fontWeight = FontWeight.Bold
@@ -126,6 +119,8 @@ fun HomeScreen(navController: NavController, userName: String?) {
         )
     }
 }
+
+// 3. REMOVIDO: A função PetListItem duplicada que estava aqui foi apagada.
 
 @Composable
 fun ActionCard(title: String, imageRes: Int, modifier: Modifier, onClick: () -> Unit) {
@@ -207,11 +202,4 @@ fun BoxScope.SmallFloatingButton(imageRes: Int, alignment: Alignment, onClick: (
             colorFilter = ColorFilter.tint(Color.White)
         )
     }
-}
-
-
-@Preview(showBackground = true, backgroundColor = 0xFFF8FEFF)
-@Composable
-fun HomeScreenPreview() {
-    HomeScreen(navController = rememberNavController(), userName = "Nicolas")
 }

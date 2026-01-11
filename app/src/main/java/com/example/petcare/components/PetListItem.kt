@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,18 +22,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.petcare.R
-import com.example.petcare.screens.home.Pet // Importando a data class Pet
+import com.example.petcare.data.local.entity.PetEntity
+import java.util.Calendar
+import java.util.Date
 
 @Composable
 fun PetListItem(
-    pet: Pet,
+    pet: PetEntity,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -57,21 +57,12 @@ fun PetListItem(
                     .background(Color(0xFFEAF7F8)),
                 contentAlignment = Alignment.Center
             ) {
-                if (pet.photo != null) {
-                    Image(
-                        painter = painterResource(id = pet.photo),
-                        contentDescription = pet.name,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_pets),
-                        contentDescription = "Ícone de Pet",
-                        colorFilter = ColorFilter.tint(Color(0xFF26B6C4)),
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
+                Image(
+                    painter = painterResource(id = R.drawable.ic_pets),
+                    contentDescription = "Ícone de Pet",
+                    colorFilter = ColorFilter.tint(Color(0xFF26B6C4)),
+                    modifier = Modifier.size(32.dp)
+                )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -83,10 +74,20 @@ fun PetListItem(
                     color = Color.Gray,
                     fontSize = 14.sp
                 )
-                pet.birthYear?.let {
-                    val currentYear = 2026
-                    val age = currentYear - it
-                    Text(text = "$age anos", color = Color.Gray, fontSize = 12.sp)
+
+                pet.birthDate?.let { birthDate ->
+                    val birthCalendar = Calendar.getInstance().apply {
+                        time = birthDate
+                    }
+                    val currentCalendar = Calendar.getInstance()
+
+                    var age = currentCalendar.get(Calendar.YEAR) - birthCalendar.get(Calendar.YEAR)
+                    if (currentCalendar.get(Calendar.DAY_OF_YEAR) < birthCalendar.get(Calendar.DAY_OF_YEAR)) {
+                        age--
+                    }
+
+                    val ageText = if (age < 1) "Menos de 1 ano" else "$age anos"
+                    Text(text = ageText, color = Color.Gray, fontSize = 12.sp)
                 }
             }
 
@@ -102,16 +103,15 @@ fun PetListItem(
 @Preview(showBackground = true)
 @Composable
 private fun PetListItemPreview() {
-    val samplePet = Pet(
-        id = "1",
+    val samplePet = PetEntity(
+        id = 1,
         name = "Theo",
         species = "Cachorro",
         breed = "Poodle",
-        photo = null,
-        birthYear = 2017
+        birthDate = Calendar.getInstance().apply {
+            set(2017, Calendar.JUNE, 20)
+        }.time
     )
-    PetListItem(
-        pet = samplePet,
-        onClick = {}
-    )
+
+    PetListItem(pet = samplePet, onClick = {})
 }

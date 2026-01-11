@@ -2,10 +2,7 @@ package com.example.petcare.screens.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -26,7 +23,6 @@ fun SignUpScreen(navController: NavController) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier
@@ -40,30 +36,18 @@ fun SignUpScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .background(Color.White.copy(alpha = 0.2f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Favorite,
-                    contentDescription = "Logo PetCare",
-                    modifier = Modifier.size(40.dp),
-                    tint = Color.White
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             Text(
                 "Crie sua conta",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
+            Text(
+                "É rápido e fácil!",
+                color = Color.White.copy(alpha = 0.8f)
+            )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             OutlinedTextField(
                 value = name,
@@ -109,26 +93,10 @@ fun SignUpScreen(navController: NavController) {
                 shape = RoundedCornerShape(8.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                label = { Text("Confirme sua senha") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    focusedIndicatorColor = Color(0xFF26B6C4)
-                ),
-                shape = RoundedCornerShape(8.dp)
-            )
-
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { navController.navigate("home") },
+                onClick = { /* Lógica de cadastro */ },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -137,8 +105,8 @@ fun SignUpScreen(navController: NavController) {
                 Text("Cadastrar", fontWeight = FontWeight.Bold, color = Color.White)
             }
 
-            TextButton(onClick = { navController.popBackStack() }) {
-                Text("Já tem uma conta? Faça login", color = Color.White)
+            TextButton(onClick = { navController.navigate("login") }) {
+                Text("Já tem uma conta? Faça Login", color = Color.White)
             }
         }
     }

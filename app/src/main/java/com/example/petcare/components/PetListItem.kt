@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,18 +23,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.petcare.R
+import com.example.petcare.screens.home.Pet // Importando a data class Pet
 
 @Composable
 fun PetListItem(
-    name: String,
-    breed: String,
-    age: String,
+    pet: Pet,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -56,20 +57,37 @@ fun PetListItem(
                     .background(Color(0xFFEAF7F8)),
                 contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_heart),
-                    contentDescription = "Ícone de Pet",
-                    colorFilter = ColorFilter.tint(Color(0xFF26B6C4)),
-                    modifier = Modifier.size(32.dp)
-                )
+                if (pet.photo != null) {
+                    Image(
+                        painter = painterResource(id = pet.photo),
+                        contentDescription = pet.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_pets),
+                        contentDescription = "Ícone de Pet",
+                        colorFilter = ColorFilter.tint(Color(0xFF26B6C4)),
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = name, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Text(text = "Cachorro • $breed", color = Color.Gray, fontSize = 14.sp)
-                Text(text = age, color = Color.Gray, fontSize = 12.sp)
+                Text(text = pet.name, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "${pet.species} ${if (!pet.breed.isNullOrEmpty()) "• ${pet.breed}" else ""}",
+                    color = Color.Gray,
+                    fontSize = 14.sp
+                )
+                pet.birthYear?.let {
+                    val currentYear = 2026
+                    val age = currentYear - it
+                    Text(text = "$age anos", color = Color.Gray, fontSize = 12.sp)
+                }
             }
 
             Image(
@@ -84,10 +102,16 @@ fun PetListItem(
 @Preview(showBackground = true)
 @Composable
 private fun PetListItemPreview() {
-    PetListItem(
+    val samplePet = Pet(
+        id = "1",
         name = "Theo",
+        species = "Cachorro",
         breed = "Poodle",
-        age = "9 anos",
+        photo = null,
+        birthYear = 2017
+    )
+    PetListItem(
+        pet = samplePet,
         onClick = {}
     )
 }

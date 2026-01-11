@@ -2,12 +2,15 @@ package com.example.petcare.screens.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,124 +25,193 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.petcare.R
 import com.example.petcare.components.PetListItem
-import com.example.petcare.components.ShortcutCard
+
+data class Pet(
+    val id: String,
+    val name: String,
+    val species: String,
+    val breed: String? = null,
+    val photo: Int? = null,
+    val birthYear: Int? = null
+)
 
 @Composable
 fun HomeScreen(navController: NavController) {
-    Scaffold(
-        containerColor = Color(0xFFEAF7F8)
-    ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
+    val userName = "Nicolas"
+    val pets = remember {
+        listOf(
+            Pet("1", "Max", "Cachorro", "Golden Retriever", R.drawable.ic_pets, 2020),
+            Pet("2", "Mia", "Gato", "Siamês", R.drawable.ic_pets, 2021)
+        )
+    }
+
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(Color(0xFFF8FEFF))) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
+                    .background(Color(0xFF26B6C4))
+                    .padding(start = 24.dp, end = 24.dp, top = 40.dp, bottom = 60.dp)
+            ) {
+                Column {
+                    Text(
+                        text = "Olá, $userName!",
+                        fontSize = 32.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Dê uma olhada nos seus pets",
+                        color = Color.White.copy(alpha = 0.8f),
+                        fontSize = 16.sp
+                    )
+                }
+            }
+
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp)
+                    .offset(y = (-30).dp)
             ) {
-                Header()
-
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .offset(y = (-30).dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ActionCard(
+                        title = "Lembretes",
+                        imageRes = R.drawable.ic_calendar_month,
+                        modifier = Modifier.weight(1f),
+                        onClick = { navController.navigate("reminders") }
+                    )
+                    ActionCard(
+                        title = "Pet Shops",
+                        imageRes = R.drawable.ic_location_on,
+                        modifier = Modifier.weight(1f),
+                        onClick = { navController.navigate("petshop") }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                if (pets.isEmpty()) {
+                    EmptyStateCard()
+                } else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(bottom = 100.dp)
                     ) {
-                        ShortcutCard(
-                            "Lembretes",
-                            R.drawable.ic_calendar_month,
-                            Modifier.weight(1f)
-                        )
-                        ShortcutCard(
-                            "Pet Shops",
-                            R.drawable.ic_location_on,
-                            Modifier.weight(1f)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        item {
+                        items(pets) { pet ->
                             PetListItem(
-                                name = "Theo",
-                                breed = "Poodle",
-                                age = "9 anos",
-                                onClick = { navController.navigate("petDetails/1") }
+                                pet = pet,
+                                onClick = {  navController.navigate("pet_detail/${pet.id}") }
                             )
                         }
                     }
                 }
             }
+        }
 
-            FloatingActionButtons(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .padding(24.dp)
+        SmallFloatingButton(
+            imageRes = R.drawable.ic_person,
+            alignment = Alignment.BottomStart,
+            onClick = { navController.navigate("profile") }
+        )
+
+        SmallFloatingButton(
+            imageRes = R.drawable.ic_add,
+            alignment = Alignment.BottomEnd,
+            onClick = { navController.navigate("pet_form") }
+        )
+    }
+}
+
+@Composable
+fun ActionCard(title: String, imageRes: Int, modifier: Modifier, onClick: () -> Unit) {
+    Card(
+        modifier = modifier
+            .height(100.dp)
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Image(
+                painter = painterResource(id = imageRes),
+                contentDescription = title,
+                modifier = Modifier.size(28.dp),
+                colorFilter = ColorFilter.tint(Color(0xFF26B6C4))
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(title, fontSize = 14.sp, color = Color(0xFF1B2D3D))
         }
     }
 }
 
 @Composable
-private fun Header() {
-    Box(
+fun EmptyStateCard() {
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-            .background(Color(0xFF26B6C4))
-            .padding(start = 24.dp, end = 24.dp, top = 40.dp, bottom = 60.dp)
+            .padding(top = 20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Column {
-            Text(
-                text = "Olá, Nicolas Ferreira!",
-                fontSize = 28.sp,
-                color = Color.White,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Dê uma olhada nos seus pets",
-                color = Color.White.copy(alpha = 0.8f)
-            )
+        Column(
+            modifier = Modifier
+                .padding(32.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .background(Color(0xFFF1F1F1), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_pets),
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp),
+                    colorFilter = ColorFilter.tint(Color(0xFF26B6C4))
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("Nenhum pet cadastrado", fontWeight = FontWeight.Bold)
+            Text("Adicione seu primeiro animal", color = Color.Gray, fontSize = 14.sp)
         }
     }
 }
 
 @Composable
-private fun FloatingActionButtons(modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween
+fun BoxScope.SmallFloatingButton(imageRes: Int, alignment: Alignment, onClick: () -> Unit) {
+    FloatingActionButton(
+        onClick = onClick,
+        modifier = Modifier
+            .align(alignment)
+            .padding(24.dp)
+            .size(64.dp),
+        containerColor = Color(0xFF26B6C4),
+        contentColor = Color.White,
+        shape = CircleShape
     ) {
-        FloatingActionButton(
-            onClick = {},
-            containerColor = Color(0xFF26B6C4),
-            shape = CircleShape
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_person),
-                contentDescription = "Perfil",
-                colorFilter = ColorFilter.tint(Color.White)
-            )
-        }
-
-        FloatingActionButton(
-            onClick = {},
-            containerColor = Color(0xFF26B6C4),
-            shape = CircleShape
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_add),
-                contentDescription = "Adicionar",
-                colorFilter = ColorFilter.tint(Color.White)
-            )
-        }
+        Image(
+            painter = painterResource(id = imageRes),
+            contentDescription = null,
+            modifier = Modifier.size(32.dp),
+            colorFilter = ColorFilter.tint(Color.White)
+        )
     }
 }
 
-@Preview(showBackground = true)
+
+@Preview(showBackground = true, backgroundColor = 0xFFF8FEFF)
 @Composable
 fun HomeScreenPreview() {
     HomeScreen(navController = rememberNavController())

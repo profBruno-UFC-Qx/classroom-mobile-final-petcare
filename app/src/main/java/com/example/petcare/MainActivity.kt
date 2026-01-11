@@ -8,8 +8,15 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.petcare.screens.home.HomeScreen
 import com.example.petcare.screens.SplashScreen
 import com.example.petcare.screens.auth.LoginScreen
+import com.example.petcare.screens.auth.SignUpScreen
+import com.example.petcare.screens.pet_details.PetDetailScreen
+import com.example.petcare.screens.pet_details.PetFormScreen
+import com.example.petcare.screens.petshop.PetShopsScreen
+import com.example.petcare.screens.profile.ProfileScreen
+import com.example.petcare.screens.reminders.RemindersScreen
 import com.example.petcare.ui.theme.PetCareTheme
 
 class MainActivity : ComponentActivity() {
@@ -38,6 +45,34 @@ fun AppNavigation() {
 
         composable("login") {
             LoginScreen(navController = navController)
+        }
+
+        composable("signup") {
+            SignUpScreen(navController = navController)
+        }
+
+        composable("home") {
+            HomeScreen(navController = navController)
+        }
+
+        composable("pet_form") {
+            PetFormScreen(navController = navController)
+        }
+
+        composable("reminders") {
+            RemindersScreen(navController = navController)
+        }
+
+        composable("profile") {
+            ProfileScreen(navController = navController)
+        }
+
+        composable("pet_detail/{petId}") {
+            PetDetailScreen(navController = navController)
+        }
+
+        composable("petshop") {
+            PetShopsScreen(navController = navController)
         }
     }
 }

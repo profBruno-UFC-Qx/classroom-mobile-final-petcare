@@ -1,4 +1,4 @@
-package com.example.petcare.ui.screens.auth
+package com.example.petcare.screens.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -22,11 +22,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun SignUpScreen(navController: NavController) {
-    var name by remember { mutableStateOf("") }
+fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier
@@ -57,28 +55,17 @@ fun SignUpScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                "Crie sua conta",
+                "Bem-vindo(a) de volta!",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Nome Completo") },
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    focusedIndicatorColor = Color(0xFF26B6C4)
-                ),
-                shape = RoundedCornerShape(8.dp)
+            Text(
+                "Acesse sua conta para continuar.",
+                color = Color.White.copy(alpha = 0.8f)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             OutlinedTextField(
                 value = email,
@@ -109,22 +96,6 @@ fun SignUpScreen(navController: NavController) {
                 shape = RoundedCornerShape(8.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                label = { Text("Confirme sua senha") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    focusedIndicatorColor = Color(0xFF26B6C4)
-                ),
-                shape = RoundedCornerShape(8.dp)
-            )
-
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
@@ -134,11 +105,11 @@ fun SignUpScreen(navController: NavController) {
                     .height(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF91D045))
             ) {
-                Text("Cadastrar", fontWeight = FontWeight.Bold, color = Color.White)
+                Text("Entrar", fontWeight = FontWeight.Bold, color = Color.White)
             }
 
-            TextButton(onClick = { navController.popBackStack() }) {
-                Text("Já tem uma conta? Faça login", color = Color.White)
+            TextButton(onClick = { navController.navigate("signup") }) {
+                Text("Não tem uma conta? Cadastre-se", color = Color.White)
             }
         }
     }
@@ -146,6 +117,6 @@ fun SignUpScreen(navController: NavController) {
 
 @Preview(showBackground = true)
 @Composable
-fun SignUpScreenPreview() {
-    SignUpScreen(navController = rememberNavController())
+fun LoginScreenPreview() {
+    LoginScreen(navController = rememberNavController())
 }

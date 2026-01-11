@@ -1,4 +1,4 @@
-package com.example.petcare.ui.screens.pet_details
+package com.example.petcare.screens.pet_details
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

@@ -1,22 +1,23 @@
-package com.example.petcare.ui.screens.reminders
+package com.example.petcare.screens.pet_details
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -24,13 +25,11 @@ import androidx.navigation.compose.rememberNavController
 import com.example.petcare.R
 
 @Composable
-fun NewReminderScreen(navController: NavController) {
-    val petId = ""
-    val type = ""
-    val title = ""
-    val description = ""
-    val date = ""
-    val time = ""
+fun PetFormScreen(navController: NavController) {
+    val name = ""
+    val breed = ""
+    val birthDate = ""
+    val species = ""
 
     Column(
         modifier = Modifier
@@ -38,64 +37,46 @@ fun NewReminderScreen(navController: NavController) {
             .background(Color(0xFFEAF7F8))
             .verticalScroll(rememberScrollState())
     ) {
-        NewReminderHeader(onBackClick = { navController.popBackStack() })
+        PetFormHeader(onBackClick = { navController.popBackStack() })
 
         Column(
             modifier = Modifier
                 .padding(24.dp)
                 .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            PetPhotoPlaceholder()
+            Text("Adicionar foto", fontSize = 14.sp, color = Color.Gray)
+
             FormField(
-                label = "Pet *",
-                value = petId,
-                placeholder = "Selecione o pet",
+                label = "Nome *",
+                value = name,
+                placeholder = "Ex: Rex, Mimi, Luna...",
+                enabled = false
+            )
+
+            FormField(
+                label = "Espécie *",
+                value = species,
+                placeholder = "Selecione a espécie",
                 trailingIconResId = R.drawable.ic_keyboard_arrow_down,
                 enabled = false
             )
 
             FormField(
-                label = "Tipo *",
-                value = type,
-                placeholder = "Saúde ou Rotina",
-                trailingIconResId = R.drawable.ic_keyboard_arrow_down,
+                label = "Raça",
+                value = breed,
+                placeholder = "Ex: Labrador, Siamês...",
                 enabled = false
             )
 
             FormField(
-                label = "Título *",
-                value = title,
-                placeholder = "Ex: Banho, Vacina V10...",
+                label = "Data de Nascimento",
+                value = birthDate,
+                placeholder = "dd/mm/aaaa",
                 enabled = false
             )
-
-            FormField(
-                label = "Descrição",
-                value = description,
-                placeholder = "Informações adicionais...",
-                height = 100.dp,
-                enabled = false
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                FormField(
-                    label = "Data *",
-                    value = date,
-                    placeholder = "dd/mm/aaaa",
-                    modifier = Modifier.weight(1f),
-                    enabled = false
-                )
-                FormField(
-                    label = "Hora *",
-                    value = time,
-                    placeholder = "--:--",
-                    modifier = Modifier.weight(1f),
-                    enabled = false
-                )
-            }
 
             ActionButtons(
                 onCancelClick = { navController.popBackStack() },
@@ -106,7 +87,7 @@ fun NewReminderScreen(navController: NavController) {
 }
 
 @Composable
-private fun NewReminderHeader(onBackClick: () -> Unit) {
+private fun PetFormHeader(onBackClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -122,11 +103,44 @@ private fun NewReminderHeader(onBackClick: () -> Unit) {
             )
         }
         Text(
-            text = "Novo Lembrete",
+            text = "Adicionar Pet",
             fontSize = 22.sp,
             color = Color.White,
             fontWeight = FontWeight.Bold
         )
+    }
+}
+
+@Composable
+private fun PetPhotoPlaceholder() {
+    Box(contentAlignment = Alignment.BottomEnd) {
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFD1EBEF)),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_camera_alt),
+                contentDescription = "Ícone de Câmera",
+                modifier = Modifier.size(48.dp),
+                colorFilter = ColorFilter.tint(Color(0xFF26B6C4))
+            )
+        }
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .background(Color(0xFF26B6C4), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_camera_alt),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                colorFilter = ColorFilter.tint(Color.White)
+            )
+        }
     }
 }
 
@@ -136,14 +150,12 @@ private fun FormField(
     value: String,
     placeholder: String,
     enabled: Boolean,
-    modifier: Modifier = Modifier,
-    height: Dp = Dp.Unspecified,
     trailingIconResId: Int? = null
 ) {
-    Column(modifier = modifier) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = label,
-            modifier = Modifier.padding(bottom = 4.dp),
+            modifier = Modifier.fillMaxWidth(),
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             color = Color(0xFF1B2D3D)
@@ -152,11 +164,9 @@ private fun FormField(
             value = value,
             onValueChange = { /* Sem interação */ },
             placeholder = { Text(placeholder, color = Color.LightGray) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = height),
-            enabled = enabled,
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
+            enabled = enabled,
             trailingIcon = trailingIconResId?.let {
                 {
                     Image(
@@ -182,7 +192,7 @@ private fun ActionButtons(onCancelClick: () -> Unit, onSaveClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 24.dp),
+            .padding(top = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         OutlinedButton(
@@ -201,7 +211,7 @@ private fun ActionButtons(onCancelClick: () -> Unit, onSaveClick: () -> Unit) {
             modifier = Modifier
                 .weight(1f)
                 .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF91D045)),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF26B6C4)),
             shape = RoundedCornerShape(8.dp),
             enabled = false
         ) {
@@ -212,6 +222,6 @@ private fun ActionButtons(onCancelClick: () -> Unit, onSaveClick: () -> Unit) {
 
 @Preview(showBackground = true)
 @Composable
-fun NewReminderScreenPreview() {
-    NewReminderScreen(navController = rememberNavController())
+fun PetFormScreenPreview() {
+    PetFormScreen(navController = rememberNavController())
 }

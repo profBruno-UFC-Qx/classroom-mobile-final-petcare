@@ -1,4 +1,4 @@
-package com.example.petcare.ui.screens.home
+package com.example.petcare.screens.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.petcare.R
-import com.example.petcare.ui.components.PetListItem
-import com.example.petcare.ui.components.ShortcutCard
+import com.example.petcare.components.PetListItem
+import com.example.petcare.components.ShortcutCard
 
 @Composable
 fun HomeScreen(navController: NavController) {

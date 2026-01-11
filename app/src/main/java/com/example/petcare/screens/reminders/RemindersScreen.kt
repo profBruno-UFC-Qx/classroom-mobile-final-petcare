@@ -1,4 +1,4 @@
-package com.example.petcare.ui.screens.reminders
+package com.example.petcare.screens.reminders
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

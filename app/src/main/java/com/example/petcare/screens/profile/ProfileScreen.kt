@@ -1,4 +1,4 @@
-package com.example.petcare.ui.screens.profile
+package com.example.petcare.screens.profile
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image

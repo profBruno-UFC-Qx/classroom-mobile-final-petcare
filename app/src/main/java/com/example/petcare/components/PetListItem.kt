@@ -15,12 +15,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,8 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.petcare.R
 import com.example.petcare.data.local.entity.PetEntity
+import com.example.petcare.ui.theme.PetCareTheme
 import java.util.Calendar
-import java.util.Date
 
 @Composable
 fun PetListItem(
@@ -42,7 +42,7 @@ fun PetListItem(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
@@ -54,13 +54,13 @@ fun PetListItem(
                 modifier = Modifier
                     .size(60.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFEAF7F8)),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_pets),
                     contentDescription = "Ícone de Pet",
-                    colorFilter = ColorFilter.tint(Color(0xFF26B6C4)),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
                     modifier = Modifier.size(32.dp)
                 )
             }
@@ -68,10 +68,15 @@ fun PetListItem(
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = pet.name, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = pet.name,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
                 Text(
                     text = "${pet.species} ${if (!pet.breed.isNullOrEmpty()) "• ${pet.breed}" else ""}",
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                     fontSize = 14.sp
                 )
 
@@ -87,14 +92,18 @@ fun PetListItem(
                     }
 
                     val ageText = if (age < 1) "Menos de 1 ano" else "$age anos"
-                    Text(text = ageText, color = Color.Gray, fontSize = 12.sp)
+                    Text(
+                        text = ageText,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        fontSize = 12.sp
+                    )
                 }
             }
 
             Image(
                 painter = painterResource(id = R.drawable.ic_chevron_right),
                 contentDescription = "Ver detalhes",
-                colorFilter = ColorFilter.tint(Color(0xFF26B6C4))
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
             )
         }
     }
@@ -113,5 +122,7 @@ private fun PetListItemPreview() {
         }.time
     )
 
-    PetListItem(pet = samplePet, onClick = {})
+    PetCareTheme {
+        PetListItem(pet = samplePet, onClick = {})
+    }
 }

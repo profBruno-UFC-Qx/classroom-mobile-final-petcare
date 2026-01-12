@@ -24,7 +24,10 @@ import com.example.petcare.viewmodel.PetFormViewModel
 import com.example.petcare.viewmodel.ViewModelFactory
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    darkTheme: Boolean,
+    onThemeUpdated: () -> Unit
+) {
     val navController = rememberNavController()
     val authRepository = remember { AuthRepository() }
     val context = LocalContext.current
@@ -52,7 +55,9 @@ fun AppNavigation() {
                 navController = navController,
                 authRepository = authRepository,
                 userName = currentUser?.displayName,
-                userEmail = currentUser?.email
+                userEmail = currentUser?.email,
+                isDarkTheme = darkTheme,
+                onThemeToggle = onThemeUpdated
             )
         }
 

@@ -3,6 +3,7 @@ package com.example.petcare.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.petcare.data.datastore.ThemeDataStore
 import com.example.petcare.data.local.PetCareDatabase
 import com.example.petcare.data.remote.RetrofitClient
 import com.example.petcare.data.repository.PetRepository
@@ -37,6 +38,10 @@ class ViewModelFactory(
             }
             modelClass.isAssignableFrom(PetShopViewModel::class.java) -> {
                 PetShopViewModel(petShopRepository) as T
+            }
+
+            modelClass.isAssignableFrom(ThemeViewModel::class.java) -> {
+                ThemeViewModel(ThemeDataStore(context)) as T
             }
 
             else -> throw IllegalArgumentException("Classe ViewModel desconhecida: ${modelClass.name}")

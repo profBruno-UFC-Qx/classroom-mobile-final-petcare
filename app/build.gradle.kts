@@ -83,12 +83,11 @@ dependencies {
 
     implementation("org.osmdroid:osmdroid-android:6.1.18")
     implementation("com.google.accompanist:accompanist-permissions:0.34.0")
-    // ... dentro do bloco dependencies { ... }
     implementation("com.google.android.gms:play-services-location:21.3.0")
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    // ... outras dependências do retrofit
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
 }

@@ -15,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -36,26 +35,26 @@ fun HomeScreen(
 
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(Color(0xFFF8FEFF))) {
+        .background(MaterialTheme.colorScheme.background)) {
         Column(modifier = Modifier.fillMaxSize()) {
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-                    .background(Color(0xFF26B6C4))
+                    .background(MaterialTheme.colorScheme.primary)
                     .padding(start = 24.dp, end = 24.dp, top = 40.dp, bottom = 60.dp)
             ) {
                 Column {
                     Text(
                         text = "Olá, ${userName ?: "Dono(a) de Pet"}!",
                         fontSize = 32.sp,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = "Dê uma olhada nos seus pets",
-                        color = Color.White.copy(alpha = 0.8f),
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
                         fontSize = 16.sp
                     )
                 }
@@ -113,7 +112,7 @@ fun ActionCard(title: String, imageRes: Int, modifier: Modifier, onClick: () -> 
         modifier = modifier
             .height(90.dp)
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -125,14 +124,14 @@ fun ActionCard(title: String, imageRes: Int, modifier: Modifier, onClick: () -> 
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .background(Color(0xFF26B6C4).copy(alpha = 0.1f), CircleShape),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
                     painter = painterResource(id = imageRes),
                     contentDescription = title,
                     modifier = Modifier.size(24.dp),
-                    colorFilter = ColorFilter.tint(Color(0xFF26B6C4))
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
@@ -140,7 +139,7 @@ fun ActionCard(title: String, imageRes: Int, modifier: Modifier, onClick: () -> 
                 text = title,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF1B2D3D)
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -152,7 +151,7 @@ fun EmptyStateCard() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier
@@ -163,19 +162,19 @@ fun EmptyStateCard() {
             Box(
                 modifier = Modifier
                     .size(80.dp)
-                    .background(Color(0xFFF1F1F1), CircleShape),
+                    .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_pets),
                     contentDescription = null,
                     modifier = Modifier.size(40.dp),
-                    colorFilter = ColorFilter.tint(Color(0xFF26B6C4))
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Nenhum pet cadastrado", fontWeight = FontWeight.Bold)
-            Text("Adicione seu primeiro animal", color = Color.Gray, fontSize = 14.sp)
+            Text("Nenhum pet cadastrado", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text("Adicione seu primeiro animal", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f), fontSize = 14.sp)
         }
     }
 }
@@ -188,15 +187,15 @@ fun BoxScope.SmallFloatingButton(imageRes: Int, alignment: Alignment, onClick: (
             .align(alignment)
             .padding(24.dp)
             .size(64.dp),
-        containerColor = Color(0xFF26B6C4),
-        contentColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
         shape = CircleShape
     ) {
         Image(
             painter = painterResource(id = imageRes),
             contentDescription = null,
             modifier = Modifier.size(32.dp),
-            colorFilter = ColorFilter.tint(Color.White)
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary)
         )
     }
 }

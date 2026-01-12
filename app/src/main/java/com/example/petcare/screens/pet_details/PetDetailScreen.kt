@@ -14,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -49,23 +48,28 @@ fun PetDetailScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate("event_form/$petId") },
-                containerColor = Color(0xFF26B6C4),
-                contentColor = Color.White
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Adicionar Cuidado")
             }
         }
     ) { innerPadding ->
         if (pet == null) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Color(0xFF26B6C4))
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         } else {
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
                     .fillMaxSize()
-                    .background(Color(0xFFF8FEFF))
+                    .background(MaterialTheme.colorScheme.background)
             ) {
                 PetDetailsHeader(
                     pet = pet!!,
@@ -79,7 +83,7 @@ fun PetDetailScreen(
                         text = "Próximos Cuidados",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1B2D3D),
+                        color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
@@ -90,7 +94,7 @@ fun PetDetailScreen(
                         ) {
                             Text(
                                 "Nenhum agendamento encontrado.",
-                                color = Color.Gray,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -121,10 +125,14 @@ fun PetDetailScreen(
                         showDeleteDialog.value = false
                         navController.popBackStack()
                     }
-                ) { Text("Excluir", color = Color.Red) }
+                ) {
+                    Text("Excluir", color = MaterialTheme.colorScheme.error)
+                }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog.value = false }) { Text("Cancelar") }
+                TextButton(onClick = { showDeleteDialog.value = false }) {
+                    Text("Cancelar", color = MaterialTheme.colorScheme.primary)
+                }
             }
         )
     }
@@ -134,9 +142,9 @@ fun PetDetailScreen(
 fun EventItem(event: PetEventEntity, dateFormatter: SimpleDateFormat) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
     ) {
         Row(
             modifier = Modifier
@@ -147,7 +155,7 @@ fun EventItem(event: PetEventEntity, dateFormatter: SimpleDateFormat) {
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .background(Color(0xFFF0F9FA), CircleShape),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -159,7 +167,7 @@ fun EventItem(event: PetEventEntity, dateFormatter: SimpleDateFormat) {
                         }
                     ),
                     contentDescription = null,
-                    tint = Color(0xFF26B6C4),
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -171,33 +179,33 @@ fun EventItem(event: PetEventEntity, dateFormatter: SimpleDateFormat) {
                     text = event.title,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    color = Color(0xFF1B2D3D)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "Data: ${dateFormatter.format(event.date)}",
                         fontSize = 14.sp,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "•",
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                         fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = event.time,
                         fontSize = 14.sp,
-                        color = Color(0xFF26B6C4),
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
 
             Surface(
-                color = Color(0xFFF0F9FA),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
@@ -205,7 +213,7 @@ fun EventItem(event: PetEventEntity, dateFormatter: SimpleDateFormat) {
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF26B6C4)
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -233,7 +241,7 @@ private fun PetDetailsHeader(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-            .background(Color(0xFF26B6C4))
+            .background(MaterialTheme.colorScheme.primary)
             .padding(bottom = 24.dp)
     ) {
         Column {
@@ -248,15 +256,15 @@ private fun PetDetailsHeader(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_arrow_back),
                         contentDescription = "Voltar",
-                        tint = Color.White
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
                 Row {
                     IconButton(onClick = onEditClick) {
-                        Icon(painter = painterResource(id = R.drawable.ic_edit), contentDescription = "Editar", tint = Color.White)
+                        Icon(painter = painterResource(id = R.drawable.ic_edit), contentDescription = "Editar", tint = MaterialTheme.colorScheme.onPrimary)
                     }
                     IconButton(onClick = onDeleteClick) {
-                        Icon(painter = painterResource(id = R.drawable.ic_delete), contentDescription = "Deletar", tint = Color.White)
+                        Icon(painter = painterResource(id = R.drawable.ic_delete), contentDescription = "Deletar", tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             }
@@ -271,24 +279,24 @@ private fun PetDetailsHeader(
                     modifier = Modifier
                         .size(80.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.2f)),
+                        .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_heart),
                         contentDescription = null,
                         modifier = Modifier.size(50.dp),
-                        tint = Color.White
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
-                    Text(pet.name, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    Text(pet.name, color = MaterialTheme.colorScheme.onPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold)
                     Text(
                         "${pet.species}${pet.breed?.takeIf { it.isNotBlank() }?.let { " • $it" } ?: ""}",
-                        color = Color.White.copy(alpha = 0.8f)
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                     )
-                    Text(ageText, color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
+                    Text(ageText, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f), fontSize = 14.sp)
                 }
             }
         }

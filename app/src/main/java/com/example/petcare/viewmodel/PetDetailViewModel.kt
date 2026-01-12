@@ -3,33 +3,27 @@ package com.example.petcare.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petcare.data.local.entity.PetEntity
+import com.example.petcare.data.local.entity.PetEventEntity
 import com.example.petcare.data.repository.PetRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class PetDetailViewModel(
-    private val petRepository: PetRepository
+    private val petRepository: PetRepository,
+    private val petId: Long
 ) : ViewModel() {
 
-    // StateFlow para guardar os dados do pet que estamos visualizando
-    private val _pet = MutableStateFlow<PetEntity?>(null)
-    val pet = _pet.asStateFlow()
+    // Observa os detalhes do Pet
+    val pet: StateFlow<PetEntity?> = petRepository.getPetById(petId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    // Função para ser chamada quando a tela é aberta com um ID de pet
-    fun loadPet(petId: Long) {
-        viewModelScope.launch {
-            petRepository.getPetById(petId).collect { petFromDb ->
-                _pet.update { petFromDb }
-            }
-        }
-    }
+    //Observa a lista de eventos/cuidados deste pet
+    val events: StateFlow<List<PetEventEntity>> = petRepository.getEventsForPet(petId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // Função para excluir o pet
-    fun deletePet(petId: Long) {
+    fun deletePet(pet: PetEntity) {
         viewModelScope.launch {
-            petRepository.deletePetById(petId)
+            petRepository.delete(pet)
         }
     }
 }

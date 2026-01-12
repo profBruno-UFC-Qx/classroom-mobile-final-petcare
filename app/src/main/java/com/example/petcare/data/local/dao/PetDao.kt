@@ -1,6 +1,7 @@
 package com.example.petcare.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -9,7 +10,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PetDao {
-
     @Query("SELECT * FROM pets ORDER BY name ASC")
     fun getAllPets(): Flow<List<PetEntity>>
 
@@ -21,4 +21,7 @@ interface PetDao {
 
     @Query("DELETE FROM pets WHERE id = :petId")
     suspend fun deletePetById(petId: Long)
+
+    @Delete
+    suspend fun delete(pet: PetEntity)
 }

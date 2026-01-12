@@ -1,115 +1,108 @@
 package com.example.petcare.screens.pet_details
 
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.petcare.R
 import com.example.petcare.data.local.entity.PetEntity
+import com.example.petcare.data.local.entity.PetEventEntity
 import com.example.petcare.viewmodel.PetDetailViewModel
-import java.util.Calendar
+import com.example.petcare.viewmodel.ViewModelFactory
+import java.text.SimpleDateFormat
+import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PetDetailScreen(
     navController: NavController,
-    petId: Long,
-    viewModel: PetDetailViewModel
+    petId: Long
 ) {
-    LaunchedEffect(key1 = petId) {
-        viewModel.loadPet(petId)
-    }
+    val factory = ViewModelFactory(LocalContext.current, petId = petId)
+    val viewModel: PetDetailViewModel = viewModel(factory = factory)
 
     val pet by viewModel.pet.collectAsState()
-    val showDeleteDialog = remember { mutableStateOf(false) }
+    val events by viewModel.events.collectAsState()
 
-    val selectedTab = 0
-    val tabs = listOf("Vacinas", "Banho e Tosa", "Consultas")
+    val showDeleteDialog = remember { mutableStateOf(false) }
+    val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
 
     Scaffold(
-        containerColor = Color(0xFFEAF7F8)
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { navController.navigate("event_form/$petId") },
+                containerColor = Color(0xFF26B6C4),
+                contentColor = Color.White
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Adicionar Cuidado")
+            }
+        }
     ) { innerPadding ->
         if (pet == null) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = Color(0xFF26B6C4))
             }
         } else {
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
                     .fillMaxSize()
+                    .background(Color(0xFFF8FEFF))
             ) {
                 PetDetailsHeader(
                     pet = pet!!,
                     onBackClick = { navController.popBackStack() },
-                    onEditClick = {
-                        navController.navigate("pet_form?petId=${pet!!.id}")
-                    },
+                    onEditClick = { navController.navigate("pet_form?petId=$petId") },
                     onDeleteClick = { showDeleteDialog.value = true }
                 )
 
-                TabRow(
-                    selectedTabIndex = selectedTab,
-                    containerColor = Color.White,
-                    contentColor = Color(0xFF26B6C4),
-                    indicator = { tabPositions ->
-                        TabRowDefaults.SecondaryIndicator(
-                            Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                            color = Color(0xFF26B6C4)
-                        )
-                    }
-                ) {
-                    tabs.forEachIndexed { index, title ->
-                        Tab(
-                            selected = selectedTab == index,
-                            onClick = { /* Sem interação */ },
-                            text = {
-                                Text(
-                                    title,
-                                    fontSize = 12.sp,
-                                    fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
-                                )
-                            }
-                        )
-                    }
-                }
-
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Button(
-                        onClick = { /* Sem interação */ },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF91D045)),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_add),
-                            contentDescription = "Adicionar",
-                            colorFilter = ColorFilter.tint(Color.White)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Adicionar ${tabs[selectedTab].takeWhile { it != ' ' }}")
-                    }
+                    Text(
+                        text = "Próximos Cuidados",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1B2D3D),
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
 
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        item { VaccineCard("Antirrábica", "03/06/2024", "Vacina") }
-                        item { VaccineCard("V10", "15/01/2024", "Vacina") }
+                    if (events.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "Nenhum agendamento encontrado.",
+                                color = Color.Gray,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            contentPadding = PaddingValues(bottom = 80.dp)
+                        ) {
+                            items(events) { event ->
+                                EventItem(event = event, dateFormatter = dateFormatter)
+                            }
+                        }
                     }
                 }
             }
@@ -120,25 +113,102 @@ fun PetDetailScreen(
         AlertDialog(
             onDismissRequest = { showDeleteDialog.value = false },
             title = { Text("Confirmar Exclusão") },
-            text = { Text("Você tem certeza que deseja excluir '${pet?.name}'? Esta ação não pode ser desfeita.") },
+            text = { Text("Você tem certeza que deseja excluir '${pet?.name}'?") },
             confirmButton = {
-                Button(
+                TextButton(
                     onClick = {
-                        viewModel.deletePet(petId)
+                        pet?.let { viewModel.deletePet(it) }
                         showDeleteDialog.value = false
                         navController.popBackStack()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Excluir")
-                }
+                    }
+                ) { Text("Excluir", color = Color.Red) }
             },
             dismissButton = {
-                Button(onClick = { showDeleteDialog.value = false }) {
-                    Text("Cancelar")
-                }
+                TextButton(onClick = { showDeleteDialog.value = false }) { Text("Cancelar") }
             }
         )
+    }
+}
+
+@Composable
+fun EventItem(event: PetEventEntity, dateFormatter: SimpleDateFormat) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(Color(0xFFF0F9FA), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(
+                        id = when (event.type) {
+                            "Vacina" -> R.drawable.ic_heart
+                            "Banho e Tosa" -> R.drawable.ic_pets
+                            else -> R.drawable.ic_event
+                        }
+                    ),
+                    contentDescription = null,
+                    tint = Color(0xFF26B6C4),
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = event.title,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = Color(0xFF1B2D3D)
+                )
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "Data: ${dateFormatter.format(event.date)}",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "•",
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = event.time,
+                        fontSize = 14.sp,
+                        color = Color(0xFF26B6C4),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Surface(
+                color = Color(0xFFF0F9FA),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    text = event.type,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF26B6C4)
+                )
+            }
+        }
     }
 }
 
@@ -162,6 +232,7 @@ private fun PetDetailsHeader(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
             .background(Color(0xFF26B6C4))
             .padding(bottom = 24.dp)
     ) {
@@ -174,26 +245,18 @@ private fun PetDetailsHeader(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onBackClick) {
-                    Image(
+                    Icon(
                         painter = painterResource(id = R.drawable.ic_arrow_back),
                         contentDescription = "Voltar",
-                        colorFilter = ColorFilter.tint(Color.White)
+                        tint = Color.White
                     )
                 }
                 Row {
                     IconButton(onClick = onEditClick) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_edit),
-                            contentDescription = "Editar",
-                            colorFilter = ColorFilter.tint(Color.White)
-                        )
+                        Icon(painter = painterResource(id = R.drawable.ic_edit), contentDescription = "Editar", tint = Color.White)
                     }
                     IconButton(onClick = onDeleteClick) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_delete),
-                            contentDescription = "Deletar",
-                            colorFilter = ColorFilter.tint(Color.White)
-                        )
+                        Icon(painter = painterResource(id = R.drawable.ic_delete), contentDescription = "Deletar", tint = Color.White)
                     }
                 }
             }
@@ -211,11 +274,11 @@ private fun PetDetailsHeader(
                         .background(Color.White.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Image(
+                    Icon(
                         painter = painterResource(id = R.drawable.ic_heart),
-                        contentDescription = "Ícone de Pet",
+                        contentDescription = null,
                         modifier = Modifier.size(50.dp),
-                        colorFilter = ColorFilter.tint(Color.White)
+                        tint = Color.White
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
@@ -228,64 +291,6 @@ private fun PetDetailsHeader(
                     Text(ageText, color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
                 }
             }
-        }
-    }
-}
-
-
-@Composable
-fun VaccineCard(name: String, date: String, type: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(name, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Surface(
-                    color = Color(0xFF91D045).copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(4.dp)
-                ) {
-                    Text(
-                        type,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                        color = Color(0xFF91D045),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("Aplicada em: $date", color = Color.Gray, fontSize = 14.sp)
-        }
-    }
-}
-
-@Composable
-fun SimpleRecordCard(title: String, subtitle: String, date: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(title, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Text(subtitle, color = Color.Gray, fontSize = 14.sp)
-            Text(date, color = Color(0xFF26B6C4), fontSize = 12.sp, fontWeight = FontWeight.Medium)
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PetDetailScreenPreview() {
-    Scaffold { padding ->
-        Column(Modifier.padding(padding)) {
-            Text("Preview indisponível devido à dependência de ViewModel")
         }
     }
 }

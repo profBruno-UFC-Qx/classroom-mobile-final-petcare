@@ -19,14 +19,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.petcare.R
 import com.example.petcare.components.PetListItem
-import com.example.petcare.data.local.entity.PetEntity
 import com.example.petcare.viewmodel.HomeViewModel
 
 @Composable
@@ -41,6 +38,7 @@ fun HomeScreen(
         .fillMaxSize()
         .background(Color(0xFFF8FEFF))) {
         Column(modifier = Modifier.fillMaxSize()) {
+            // Cabeçalho azul
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -68,23 +66,13 @@ fun HomeScreen(
                     .padding(horizontal = 16.dp)
                     .offset(y = (-30).dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    ActionCard(
-                        title = "Lembretes",
-                        imageRes = R.drawable.ic_calendar_month,
-                        modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate("reminders") }
-                    )
-                    ActionCard(
-                        title = "Pet Shops",
-                        imageRes = R.drawable.ic_location_on,
-                        modifier = Modifier.weight(1f),
-                        onClick = { navController.navigate("petshop") }
-                    )
-                }
+                // --- BOTÃO DE PET SHOP ESTICADO ---
+                ActionCard(
+                    title = "Pet Shops Próximos",
+                    imageRes = R.drawable.ic_location_on,
+                    modifier = Modifier.fillMaxWidth(), // Agora ocupa a largura total
+                    onClick = { navController.navigate("petshop") }
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -98,7 +86,7 @@ fun HomeScreen(
                         items(pets) { pet ->
                             PetListItem(
                                 pet = pet,
-                                onClick = {  navController.navigate("pet_detail/${pet.id}") }
+                                onClick = { navController.navigate("pet_details/${pet.id}") }
                             )
                         }
                     }
@@ -106,6 +94,7 @@ fun HomeScreen(
             }
         }
 
+        // Botões flutuantes inferiores
         SmallFloatingButton(
             imageRes = R.drawable.ic_person,
             alignment = Alignment.BottomStart,
@@ -120,31 +109,41 @@ fun HomeScreen(
     }
 }
 
-// 3. REMOVIDO: A função PetListItem duplicada que estava aqui foi apagada.
-
 @Composable
 fun ActionCard(title: String, imageRes: Int, modifier: Modifier, onClick: () -> Unit) {
     Card(
         modifier = modifier
-            .height(100.dp)
+            .height(90.dp)
             .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        Row(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
         ) {
-            Image(
-                painter = painterResource(id = imageRes),
-                contentDescription = title,
-                modifier = Modifier.size(28.dp),
-                colorFilter = ColorFilter.tint(Color(0xFF26B6C4))
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(Color(0xFF26B6C4).copy(alpha = 0.1f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = title,
+                    modifier = Modifier.size(24.dp),
+                    colorFilter = ColorFilter.tint(Color(0xFF26B6C4))
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF1B2D3D)
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(title, fontSize = 14.sp, color = Color(0xFF1B2D3D))
         }
     }
 }

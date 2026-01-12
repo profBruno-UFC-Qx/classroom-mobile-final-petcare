@@ -6,27 +6,45 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.petcare.data.local.PetCareDatabase
 import com.example.petcare.data.repository.PetRepository
 
-class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
+/**
+ * Fábrica de ViewModels que injeta as dependências necessárias.
+ * O petId é opcional e usado apenas pelos ViewModels que precisam dele.
+ */
+class ViewModelFactory(
+    private val context: Context,
+    private val petId: Long? = null // petId é opcional
+) : ViewModelProvider.Factory {
 
-    private val database by lazy { PetCareDatabase.getDatabase(context) }
-    private val petRepository by lazy { PetRepository(database.petDao()) }
-
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(PetFormViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return PetFormViewModel(petRepository) as T
-        }
+        // Inicializa o banco de dados e o repositório uma vez aqui
+        val db = PetCareDatabase.getDatabase(context)
+        val petRepository = PetRepository(db.petDao(), db.petEventDao())
 
-        if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return HomeViewModel(petRepository) as T
+        return when {
+            // ViewModel para a tela principal
+            modelClass.isAssignableFrom(HomeViewModel::class.java) -> {
+                HomeViewModel(petRepository) as T
+            }
+            // ViewModel para o formulário de criar/editar Pet
+            modelClass.isAssignableFrom(PetFormViewModel::class.java) -> {
+                PetFormViewModel(petRepository) as T
+            }
+            // ViewModel para a tela de detalhes de um Pet
+            modelClass.isAssignableFrom(PetDetailViewModel::class.java) -> {
+                // Requer que o petId tenha sido fornecido ao criar a factory
+                requireNotNull(petId) { "petId não pode ser nulo para PetDetailViewModel" }
+                PetDetailViewModel(petRepository, petId) as T
+            }
+            
+            // ViewModel para o formulário de criar um novo Cuidado/Evento
+            modelClass.isAssignableFrom(EventFormViewModel::class.java) -> {
+                // Também requer o petId para saber a qual pet o evento pertence
+                requireNotNull(petId) { "petId não pode ser nulo para EventFormViewModel" }
+                EventFormViewModel(petRepository, petId) as T
+            }
+            // Caso algum ViewModel não seja encontrado
+            else -> throw IllegalArgumentException("Classe ViewModel desconhecida: ${modelClass.name}")
         }
-
-        if (modelClass.isAssignableFrom(PetDetailViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return PetDetailViewModel(petRepository) as T
-        }
-
-        throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }
 }

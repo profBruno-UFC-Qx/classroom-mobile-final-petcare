@@ -13,14 +13,13 @@ import com.example.petcare.data.repository.AuthRepository
 import com.example.petcare.screens.SplashScreen
 import com.example.petcare.screens.auth.LoginScreen
 import com.example.petcare.screens.auth.SignUpScreen
+import com.example.petcare.screens.event_form.EventFormScreen
 import com.example.petcare.screens.home.HomeScreen
 import com.example.petcare.screens.pet_details.PetDetailScreen
 import com.example.petcare.screens.pet_details.PetFormScreen
 import com.example.petcare.screens.petshop.PetShopsScreen
 import com.example.petcare.screens.profile.ProfileScreen
-import com.example.petcare.screens.reminders.RemindersScreen
 import com.example.petcare.viewmodel.HomeViewModel
-import com.example.petcare.viewmodel.PetDetailViewModel
 import com.example.petcare.viewmodel.PetFormViewModel
 import com.example.petcare.viewmodel.ViewModelFactory
 
@@ -29,48 +28,32 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val authRepository = remember { AuthRepository() }
     val context = LocalContext.current
-    val factory = remember { ViewModelFactory(context) }
-
 
     NavHost(
         navController = navController,
         startDestination = if (authRepository.getCurrentUser() != null) "home" else "splash"
     ) {
-        composable("splash") {
-            SplashScreen(navController = navController)
-        }
-
-        composable("login") {
-            LoginScreen(navController = navController)
-        }
-
-        composable("signup") {
-            SignUpScreen(navController = navController)
-        }
+        composable("splash") { SplashScreen(navController) }
+        composable("login") { LoginScreen(navController) }
+        composable("signup") { SignUpScreen(navController) }
 
         composable("home") {
-            val currentUser = authRepository.getCurrentUser()
-            val homeViewModel: HomeViewModel = viewModel(factory = factory)
-
+            val homeViewModel: HomeViewModel = viewModel(factory = ViewModelFactory(context))
             HomeScreen(
                 navController = navController,
-                userName = currentUser?.displayName,
+                userName = authRepository.getCurrentUser()?.displayName,
                 homeViewModel = homeViewModel
             )
         }
 
+        composable("petshop") { PetShopsScreen(navController) }
+
         composable(
             route = "pet_form?petId={petId}",
-            arguments = listOf(
-                navArgument("petId") {
-                    type = NavType.LongType
-                    defaultValue = 0L
-                }
-            )
+            arguments = listOf(navArgument("petId") { type = NavType.LongType; defaultValue = 0L })
         ) { backStackEntry ->
-            val petFormViewModel: PetFormViewModel = viewModel(factory = factory)
             val petId = backStackEntry.arguments?.getLong("petId")
-
+            val petFormViewModel: PetFormViewModel = viewModel(factory = ViewModelFactory(context))
             PetFormScreen(
                 navController = navController,
                 viewModel = petFormViewModel,
@@ -78,38 +61,28 @@ fun AppNavigation() {
             )
         }
 
-        composable("reminders") {
-            RemindersScreen(navController = navController)
-        }
-
-        composable("profile") {
-            val currentUser = authRepository.getCurrentUser()
-            ProfileScreen(
+        composable(
+            route = "pet_details/{petId}",
+            arguments = listOf(navArgument("petId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val petId = backStackEntry.arguments?.getLong("petId")!!
+            PetDetailScreen(
                 navController = navController,
-                authRepository = authRepository,
-                userName = currentUser?.displayName,
-                userEmail = currentUser?.email
+                petId = petId
             )
         }
 
         composable(
-            route = "pet_detail/{petId}",
+            route = "event_form/{petId}",
             arguments = listOf(navArgument("petId") { type = NavType.LongType })
         ) { backStackEntry ->
             val petId = backStackEntry.arguments?.getLong("petId")
-                ?: throw IllegalStateException("Pet ID não encontrado. Verifique a rota de navegação.")
+                ?: throw IllegalStateException("petId é obrigatório para o formulário de evento")
 
-            val viewModel: PetDetailViewModel = viewModel(factory = factory)
-
-            PetDetailScreen(
+            EventFormScreen(
                 navController = navController,
-                petId = petId,
-                viewModel = viewModel
+                petId = petId
             )
-        }
-
-        composable("petshop") {
-            PetShopsScreen(navController = navController)
         }
     }
 }

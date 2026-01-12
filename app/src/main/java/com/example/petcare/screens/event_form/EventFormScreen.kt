@@ -1,6 +1,9 @@
 package com.example.petcare.screens.event_form
 
+import android.Manifest
+import android.os.Build
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,37 +17,44 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
+import com.example.petcare.R
 import com.example.petcare.components.DropdownMenuField
+import com.example.petcare.utils.NotificationWorker
 import com.example.petcare.viewmodel.EventFormViewModel
 import com.example.petcare.viewmodel.ViewModelFactory
+import com.google.accompanist.permissions.*
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
+import java.util.*
+import java.util.concurrent.TimeUnit
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun EventFormScreen(
     navController: NavController,
     petId: Long
 ) {
-    val factory = ViewModelFactory(LocalContext.current, petId = petId)
+    val context = LocalContext.current
+    val factory = ViewModelFactory(context, petId = petId)
     val viewModel: EventFormViewModel = viewModel(factory = factory)
+
     val eventTypes = listOf("Vacina", "Banho e Tosa", "Consulta", "Vermífugo", "Outro")
     val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
 
-    // Estados para os diálogos
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
 
-    // Configuração do DatePicker
     val datePickerState = rememberDatePickerState()
-
-    // Configuração do TimePicker (Relógio)
     val calendar = Calendar.getInstance()
     val timePickerState = rememberTimePickerState(
         initialHour = calendar.get(Calendar.HOUR_OF_DAY),
@@ -52,7 +62,18 @@ fun EventFormScreen(
         is24Hour = true
     )
 
-    // --- DIÁLOGO DO CALENDÁRIO ---
+    val notificationPermissionState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
+    } else { null }
+
+    LaunchedEffect(Unit) {
+        notificationPermissionState?.let {
+            if (!it.status.isGranted) {
+                it.launchPermissionRequest()
+            }
+        }
+    }
+
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -61,28 +82,24 @@ fun EventFormScreen(
                     viewModel.onNextDueDateChange(datePickerState.selectedDateMillis)
                     showDatePicker = false
                 }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
             }
         ) { DatePicker(state = datePickerState) }
     }
 
-    // --- DIÁLOGO DO RELÓGIO (TIMEPICKER) ---
     if (showTimePicker) {
-        AlertDialog(
-            onDismissRequest = { showTimePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    val formattedTime = String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
-                    viewModel.onTimeChange(formattedTime)
-                    showTimePicker = false
-                }) { Text("OK") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text("Cancelar") }
-            },
-            text = {
-                TimePicker(state = timePickerState)
+        TimePickerDialogCustom(
+            onCancel = { showTimePicker = false },
+            onConfirm = {
+                val formattedTime = String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
+                viewModel.onTimeChange(formattedTime)
+                showTimePicker = false
             }
-        )
+        ) {
+            TimePicker(state = timePickerState)
+        }
     }
 
     Scaffold(
@@ -93,7 +110,12 @@ fun EventFormScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
             )
         }
     ) { innerPadding ->
@@ -120,14 +142,12 @@ fun EventFormScreen(
                 shape = RoundedCornerShape(12.dp)
             )
 
-            // Campo de Data (Abre Calendário)
             CustomClickableField(
                 label = "Data do Agendamento *",
                 value = viewModel.nextDueDate?.let { dateFormatter.format(it) } ?: "Selecionar data",
                 onClick = { showDatePicker = true }
             )
 
-            // Campo de Hora (Abre Relógio)
             CustomClickableField(
                 label = "Horário *",
                 value = viewModel.eventTime.ifBlank { "Selecionar horário" },
@@ -138,17 +158,44 @@ fun EventFormScreen(
 
             Button(
                 onClick = {
+                    val eventCalendar = Calendar.getInstance().apply {
+                        timeInMillis = viewModel.nextDueDate ?: System.currentTimeMillis()
+                        val timeParts = viewModel.eventTime.split(":")
+                        set(Calendar.HOUR_OF_DAY, timeParts.getOrNull(0)?.toInt() ?: 0)
+                        set(Calendar.MINUTE, timeParts.getOrNull(1)?.toInt() ?: 0)
+                        set(Calendar.SECOND, 0)
+                    }
+
+                    val delay = eventCalendar.timeInMillis - System.currentTimeMillis()
+
+                    if (delay > 0) {
+                        val inputData = workDataOf(
+                            "title" to "Lembrete: ${viewModel.eventName}",
+                            "message" to "Está na hora do compromisso do seu pet!",
+                            "id" to eventCalendar.timeInMillis.toInt()
+                        )
+
+                        val notificationWorkRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
+                            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                            .setInputData(inputData)
+                            .addTag("event_${eventCalendar.timeInMillis}")
+                            .build()
+
+                        WorkManager.getInstance(context).enqueue(notificationWorkRequest)
+                    }
+
                     viewModel.saveEvent()
                     navController.popBackStack()
                 },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF26B6C4)),
                 enabled = viewModel.eventName.isNotBlank() &&
                         viewModel.nextDueDate != null &&
                         viewModel.eventTime.isNotBlank()
             ) {
-                Text("Confirmar Agendamento", fontWeight = FontWeight.Bold)
+                Text("Confirmar Agendamento", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -157,15 +204,56 @@ fun EventFormScreen(
 @Composable
 fun CustomClickableField(label: String, value: String, onClick: () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(text = label, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
+        Text(text = label, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
         Surface(
-            modifier = Modifier.fillMaxWidth().height(56.dp).clickable { onClick() },
-            color = Color(0xFFF7FBFB),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .clickable { onClick() },
             shape = RoundedCornerShape(12.dp),
-            border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            color = MaterialTheme.colorScheme.surface
         ) {
             Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.padding(horizontal = 16.dp)) {
-                Text(text = value, color = if (value.contains(":|/".toRegex())) Color.Black else Color.Gray)
+                Text(text = value, color = MaterialTheme.colorScheme.onSurface)
+            }
+        }
+    }
+}
+
+@Composable
+private fun TimePickerDialogCustom(
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onCancel,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            tonalElevation = 6.dp,
+            modifier = Modifier
+                .width(IntrinsicSize.Min)
+                .height(IntrinsicSize.Min)
+                .background(shape = MaterialTheme.shapes.extraLarge, color = MaterialTheme.colorScheme.surface),
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Selecione o Horário",
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
+                    style = MaterialTheme.typography.labelMedium
+                )
+                content()
+                Row(modifier = Modifier.padding(top = 16.dp).fillMaxWidth()) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    TextButton(onClick = onCancel) { Text("Cancelar") }
+                    TextButton(onClick = onConfirm) { Text("OK") }
+                }
             }
         }
     }

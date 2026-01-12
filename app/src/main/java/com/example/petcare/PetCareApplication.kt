@@ -2,6 +2,7 @@ package com.example.petcare
 
 import android.app.Application
 import com.example.petcare.BuildConfig
+import com.example.petcare.utils.NotificationUtils
 import org.osmdroid.config.Configuration
 
 class PetCareApplication : Application() {
@@ -15,5 +16,7 @@ class PetCareApplication : Application() {
         )
 
         Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
+
+        NotificationUtils.createNotificationChannel(this)
     }
 }

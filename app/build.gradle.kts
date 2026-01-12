@@ -18,6 +18,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary = true
+        }
     }
 
     buildTypes {
@@ -27,6 +30,18 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+    }
+
+    // --- ADICIONE ESTE BLOCO ---
+    buildFeatures {
+        buildConfig = true
+    }
+    // --- FIM DO BLOCO ---
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
 
@@ -65,4 +80,15 @@ dependencies {
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
+
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+    // ... dentro do bloco dependencies { ... }
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    // ... outras dependências do retrofit
+    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+
 }

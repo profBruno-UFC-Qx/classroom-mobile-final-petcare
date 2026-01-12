@@ -38,7 +38,7 @@ fun HomeScreen(
         .fillMaxSize()
         .background(Color(0xFFF8FEFF))) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Cabeçalho azul
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -66,11 +66,10 @@ fun HomeScreen(
                     .padding(horizontal = 16.dp)
                     .offset(y = (-30).dp)
             ) {
-                // --- BOTÃO DE PET SHOP ESTICADO ---
                 ActionCard(
                     title = "Pet Shops Próximos",
                     imageRes = R.drawable.ic_location_on,
-                    modifier = Modifier.fillMaxWidth(), // Agora ocupa a largura total
+                    modifier = Modifier.fillMaxWidth(),
                     onClick = { navController.navigate("petshop") }
                 )
 
@@ -94,7 +93,6 @@ fun HomeScreen(
             }
         }
 
-        // Botões flutuantes inferiores
         SmallFloatingButton(
             imageRes = R.drawable.ic_person,
             alignment = Alignment.BottomStart,

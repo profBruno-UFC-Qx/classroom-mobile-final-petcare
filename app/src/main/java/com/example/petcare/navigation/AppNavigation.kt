@@ -17,7 +17,7 @@ import com.example.petcare.screens.event_form.EventFormScreen
 import com.example.petcare.screens.home.HomeScreen
 import com.example.petcare.screens.pet_details.PetDetailScreen
 import com.example.petcare.screens.pet_details.PetFormScreen
-import com.example.petcare.screens.petshop.PetShopsScreen
+import com.example.petcare.screens.petshop.PetShopScreen
 import com.example.petcare.screens.profile.ProfileScreen
 import com.example.petcare.viewmodel.HomeViewModel
 import com.example.petcare.viewmodel.PetFormViewModel
@@ -46,7 +46,19 @@ fun AppNavigation() {
             )
         }
 
-        composable("petshop") { PetShopsScreen(navController) }
+        composable("profile") {
+            val currentUser = authRepository.getCurrentUser()
+            ProfileScreen(
+                navController = navController,
+                authRepository = authRepository,
+                userName = currentUser?.displayName,
+                userEmail = currentUser?.email
+            )
+        }
+
+        composable("petshop") {
+            PetShopScreen(navController = navController)
+        }
 
         composable(
             route = "pet_form?petId={petId}",
